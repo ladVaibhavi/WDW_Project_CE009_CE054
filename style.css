@@ -1,0 +1,46 @@
+body{
+  /* background-image: url('bg.jpg'); */
+  background-color: rgb(5, 1, 43);
+  font-family: Georgia, serif;
+}
+.grid{
+  /* align-items: center; */
+  margin-top: 2%;
+  margin-left: 500px;
+  width: 500px;
+  height: 700px;
+  background-image: url('bgnd.png');
+  position: relative;
+  text-align: center;
+  font-size: 60px;
+}
+
+.doodler{
+  width: 87px;
+  height: 85px;
+  background-image: url('doodler-guy.png');
+  position: absolute;
+}
+
+.platform{
+  width: 85px;
+  height: 15px;
+  background-image: url('platform.png');
+  position: absolute;
+}
+
+#myDIV{
+  padding-top: 13%;
+  color: midnightblue;
+  /* background-image: url('https://images-na.ssl-images-amazon.com/images/I/7143LZRn7OL.jpg'); */
+}
+
+.btn{
+  width: 35%;
+  height: 15%;
+  font-size: 50%;
+}
+
+.game_over{
+  margin-top: 50%;
+}

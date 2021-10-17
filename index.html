@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
+    <title>Document</title>
+    <link href="style.css" rel="stylesheet">
+    <style>
+        .fas {
+            color: darkblue;
+            margin-bottom: 3%;
+        }
+        </style>
+</head>
+<body>
+    <div class="grid">
+        <i class="fas fa-volume-off" id="vol"  onclick="volume(this)" style="margin-left: 85%;"></i>
+        <div id="myDIV" onclick="myFunction()">
+        <img src="doodler-guy.png" width="35%" height="35%">
+        <p>Doodler Jump</p>
+        <button onclick="newGame()" class="btn btn-primary">Start</button>
+        </div>
+    </div>
+    <audio id="song">
+        <source src="song.mp3" type="audio/mp3">
+    </audio>
+    <script>
+    var ispaused = false;
+    var music = document.getElementById("song");
+    function myFunction() {
+        var x = document.getElementById("myDIV");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+        var y=document.getElementById("vol");
+        y.style.display = "none";
+    }
+
+    function volume(x) {
+        x.classList.toggle("fa-volume-up");
+        sound();
+    }
+
+    function sound(){
+        music.pause();
+        ispaused = true;
+    }
+
+    function newGame(){
+    const grid=document.querySelector('.grid');
+    const doodler=document.createElement('div');
+    let doodlerLeftSpace = 50;
+    let startPoint = 250;
+    let speed = 3;
+    let gravity = 0.9;
+    let doodlerBottomSpace = startPoint;
+    let isGameOver=false;
+    let platformCount=6;
+    let platforms = [];
+    let upTimerId;
+    let downTimerId;
+    let isJumping = true;
+    let isGoingLeft = false;
+    let isGoingRight = false;
+    let leftTimerId;
+    let rightTimerId;
+    let score=0;
+    let played;
+
+    function createDoodler(){
+        grid.appendChild(doodler);
+        doodler.classList.add('doodler');
+        doodlerLeftSpace = platforms[0].left;
+        doodler.style.left=doodlerLeftSpace+'px';
+        doodler.style.bottom=doodlerBottomSpace+'px';
+    }
+
+    function temp(){
+        isGameOver = false;
+        while(grid.firstChild){
+            grid.removeChild(grid.firstChild);
+        }
+        newGame();
+    }
+
+    function playAudio(){
+        if(!ispaused)
+            music.play();
+    };
+
+    function pauseAudio(){
+        music.pause();
+        music.currentTime = 0;
+    }
+
+    function GameOver(score) {
+        pauseAudio();
+        let game_over = document.createElement('p');
+        game_over.innerHTML = "Game over" + "<br>" + "Score : " + score ;
+        game_over.style.padding = "35% 0px 0 0";
+        game_over.style.color = "green";
+        grid.appendChild(game_over);
+        let restart = document.createElement('button');
+        restart.innerHTML = "Restart";
+        restart.style.backgroundColor = "#008CBA";
+        restart.style.color="white";
+        restart.style.margin = "-1000% 0 0 0"
+        grid.appendChild(restart);
+        restart.addEventListener("click",temp);
+    }
+
+    class Platform{
+        constructor(newPlatBottom){
+            this.bottom = newPlatBottom;
+            this.left = Math.random() * 415;
+            this.visual = document.createElement('div');
+
+            const visual = this.visual;
+            visual.classList.add('platform');
+            visual.style.left = this.left + 'px';
+            visual.style.bottom = this.bottom + 'px'; 
+            grid.appendChild(visual);
+        }
+    }
+
+    function createPlatforms(){
+        for(let i=0 ; i<platformCount ; i++){
+            let platGap = 600/platformCount;
+            let newPlatBottom=100 + i*platGap;
+            let newPlatform = new Platform(newPlatBottom);
+            platforms.push(newPlatform);
+        }
+    }
+
+    function movePlatforms(){
+        if(doodlerBottomSpace>200){
+            platforms.forEach(platform =>{
+                platform.bottom -= 4;
+                let visual = platform.visual;
+                visual.style.bottom = platform.bottom + 'px';
+
+                if(platform.bottom < 10){
+                    let firstPlatform = platforms[0].visual;
+                    firstPlatform.classList.remove('platform');
+                    platforms.shift();
+                    score++;
+                    let newPlatform = new Platform(600);
+                    platforms.push(newPlatform);
+                }
+            })
+        }
+    }
+
+    function jump(){
+        clearInterval(downTimerId);
+        isJumping = true;
+        upTimerId = setInterval(function(){
+            doodlerBottomSpace += 10;
+            doodler.style.bottom = doodlerBottomSpace + 'px';
+            if(doodlerBottomSpace > (startPoint + 200)){
+                fall();
+                isJumping = false
+            }
+        },30)
+    }
+
+    function fall(){
+        isJumping = false;
+        clearInterval(upTimerId);
+        downTimerId = setInterval(function() {
+            doodlerBottomSpace -= 5;
+            doodler.style.bottom = doodlerBottomSpace + 'px';
+            if(doodlerBottomSpace <= 0){
+                gameOver();
+            }
+            platforms.forEach(platform => {
+                if(
+                    (doodlerBottomSpace >= platform.bottom) &&
+                    (doodlerBottomSpace <= (platform.bottom +15)) &&
+                    ((doodlerLeftSpace + 60) >= platform.left) &&
+                    (doodlerLeftSpace <= (platform.left + 85)) &&
+                    !isJumping
+                ){
+                    startPoint = doodlerBottomSpace;
+                    jump();
+                    isJumping = true;
+                }
+            })
+        },20)
+    }
+
+    function gameOver(){
+        isGameOver = true;
+        
+        while(grid.firstChild){
+            grid.removeChild(grid.firstChild);
+        }
+        
+        // grid.innerHTML = score;
+        clearInterval(upTimerId);
+        clearInterval(downTimerId);
+        clearInterval(leftTimerId);
+        clearInterval(rightTimerId);
+        GameOver(score);
+    }
+
+    function control(e){
+        doodler.style.bottom = doodlerBottomSpace + 'px';
+        if(e.key == "ArrowLeft"){
+            moveLeft();
+        }else if(e.key == "ArrowRight"){
+            moveRight();
+        }else if(e.key == "ArrowUp"){
+            moveStraight()
+        }
+    }
+
+    function moveLeft(){
+        clearInterval(leftTimerId);
+        clearInterval(rightTimerId);
+        isGoingRight = false;
+        isGoingLeft = true;
+        if(isGoingRight){
+            clearInterval(rightTimerId);
+            isGoingRight = false;
+        }
+        isGoingLeft = true;
+        leftTimerId = setInterval(function(){
+            if(doodlerLeftSpace >= 0){
+                doodlerLeftSpace -= 5 ;
+                doodler.style.left = doodlerLeftSpace + 'px';
+            }
+            else
+                moveRight();
+            
+        },20)
+    }
+
+    function moveRight(){
+        clearInterval(leftTimerId);
+        clearInterval(rightTimerId);
+        isGoingLeft = false;
+        isGoingRight = true;
+        if(isGoingLeft){
+            clearInterval(leftTimerId);
+            isGoingLeft = false;
+        }
+        isGoingRight = true;
+        rightTimerId = setInterval(function(){
+            if(doodlerLeftSpace <= 313){
+                doodlerLeftSpace += 5;
+                doodler.style.left = doodlerLeftSpace + 'px';
+            }else moveLeft();
+        },20)
+    }
+
+    function moveStraight(){
+        isGoingRight = false;
+        isGoingLeft = false;
+        clearInterval(rightTimerId);
+        clearInterval(leftTimerId);
+    }
+
+    function start(){
+        if(!isGameOver){
+            createPlatforms();
+            createDoodler();
+            setInterval(movePlatforms,30);
+            playAudio();
+            jump(startPoint);
+            document.addEventListener('keyup',control);
+        }
+    }
+    start();
+}
+</script>
+</body>
+</html>
